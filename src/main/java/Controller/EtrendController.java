@@ -28,8 +28,6 @@ import Modell.EdzesDAO;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -42,6 +40,7 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
@@ -75,7 +74,8 @@ public class EtrendController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        
+       
+    	
         logger.info("Étrend lap betöltése...");
         
         String etrendTipus;
@@ -86,6 +86,8 @@ public class EtrendController implements Initializable {
             } else {
                 etrendTipus = "fogyasEtrendXML.xml";
             }
+           // EdzesDAO.MoveXML(etrendTipus);
+            
 
             reggeliA.getChildren().add(new Text(EdzesDAO.getEtrend(etrendTipus).get(0).getReggeli()));
             reggeliB.getChildren().add(new Text(EdzesDAO.getEtrend(etrendTipus).get(1).getReggeli()));
@@ -113,7 +115,6 @@ public class EtrendController implements Initializable {
             vacsoraD.getChildren().add(new Text(EdzesDAO.getEtrend(etrendTipus).get(3).getVacsora()));
 
         } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
-            Logger.getLogger(EtrendController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
