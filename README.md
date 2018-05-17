@@ -1,2 +1,2 @@
-# edzestervpk
-Progkörny beadandó.
+# Edzesterv
+Edzésterv összeállító program (PROGTECH beadandó)
