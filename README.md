@@ -1,2 +1,5 @@
 # Edzesterv
-Edzésterv összeállító program (PROGTECH beadandó)
+Edzésterv összeállító program. 
+(Progtech és progkörny beadandó)
+
+Készítette: Barna Vilmos
