@@ -159,6 +159,28 @@
                     </execution>
                 </executions>
             </plugin>
+             <plugin>
+                <groupId>org.openclover</groupId>
+                <artifactId>clover-maven-plugin</artifactId>
+                <version>4.2.0</version>
+                <executions> 
+                    <execution> 
+                        <id>verify</id> 
+                        <phase>verify</phase> 
+                        <goals> 
+                            <goal>instrument</goal> 
+                            <goal>check</goal> 
+                        </goals> 
+                    </execution> 
+                    <execution> 
+                        <id>pre-site</id> 
+                        <phase>pre-site</phase> 
+                        <goals> 
+                            <goal>instrument</goal> 
+                        </goals> 
+                    </execution> 
+                </executions> 
+			</plugin>
         </plugins>
     </build>
     
