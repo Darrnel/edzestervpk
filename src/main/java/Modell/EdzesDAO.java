@@ -26,6 +26,9 @@ THE SOFTWARE.
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
 import static java.lang.Integer.parseInt;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,11 +42,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import static java.nio.file.StandardCopyOption.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
+import Controller.AdatokController;
 
 /**
  * Adatok adatbázisba írását illetve olvasását megvalósító osztály.
@@ -52,6 +60,120 @@ import org.xml.sax.SAXException;
  */
 public class EdzesDAO {
 
+	private static final Logger logger = LoggerFactory.getLogger(AdatokController.class);
+	
+	/**
+	 * A dataXML.xml adatbázis elkészítését végző függvény.
+	 */
+	public static void CreateXML(String filename,String rootName) {
+        try {
+        	
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            
+            
+            Document doc;
+            Element root ;
+
+            File inputFile;
+            inputFile = new File(System.getProperty("user.home") + "/."+filename);
+
+            if (inputFile.exists()) {
+                doc = db.parse(inputFile);
+            } else {
+                doc = db.newDocument();
+            }
+
+            if (doc.getDocumentElement() == null) {
+                root = doc.createElement(rootName);
+                doc.appendChild(root);
+            } else {
+                root = doc.getDocumentElement();
+            }
+
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer t = tf.newTransformer();
+
+            DOMSource source = new DOMSource(doc);
+
+            StreamResult result = new StreamResult(inputFile);
+
+            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            t.setOutputProperty(OutputKeys.INDENT, "yes");
+            t.setOutputProperty("{http://xml.apche.org/xslt}indent-amount", "4");
+            t.transform(source, result);
+
+        } catch (TransformerConfigurationException | ParserConfigurationException | IOException e) {
+
+        } catch (TransformerException | SAXException e) {
+        }
+	}
+	
+	/*public static void MoveXML(String filename) {
+        File input = new File("/src/main/resources/xml/"+filename);
+        File output = new File(System.getProperty("user.home")+"/."+filename);
+        
+        logger.info(input.getAbsolutePath());
+        
+       // File input2 = input.renameTo(new File(System.getProperty("user.home")+"/."+filename));
+        
+        try {
+        	Files.copy(input.toPath(),output.toPath(),StandardCopyOption.REPLACE_EXISTING);
+        	//Files.move(input.toPath(), output.toPath().resolve(input.getName()), REPLACE_EXISTING);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			logger.error("Nem sikerült áthelyezni a fájlt.");
+		}
+        
+        logger.info(input.getAbsolutePath());
+	}*/
+
+	 public static void createFelhasznalo(String felhNev, String felhMagassag, String felhSuly) throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerException {
+
+	        //InputStream inputFile = EdzesDAO.class.getResourceAsStream("dataXML.xml");
+	    	File inputFile = new File(System.getProperty("user.home") + "/.dataXML.xml");
+	        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder db = dbf.newDocumentBuilder();
+	        Document doc = db.parse(inputFile);
+	        Element root = doc.getDocumentElement();
+
+	        Element felhasznaloE = doc.createElement("felhasznalo");
+
+	        Felhasznalo f = new Felhasznalo(felhNev, parseInt(felhMagassag), parseInt(felhSuly));
+
+	        long felhTtindex = f.getTtindex();
+
+	        long felhKcal = f.getKcal();
+
+	        Attr nev = doc.createAttribute("nev");
+	        Attr ttindex = doc.createAttribute("ttindex");
+	        Attr kcal = doc.createAttribute("kcal");
+
+	        nev.setNodeValue(felhNev);
+	        ttindex.setNodeValue(String.valueOf(felhTtindex));
+	        kcal.setNodeValue(String.valueOf(felhKcal));
+
+	        felhasznaloE.setAttributeNode(kcal);
+	        felhasznaloE.setAttributeNode(nev);
+	        felhasznaloE.setAttributeNode(ttindex);
+
+	        root.appendChild(felhasznaloE);
+
+	        Element edzestervE = doc.createElement("edzesterv");
+
+	        felhasznaloE.appendChild(edzestervE);
+
+	        DOMSource source = new DOMSource(doc);
+
+	        TransformerFactory tf = TransformerFactory.newInstance();
+	        Transformer t = tf.newTransformer();
+	        t.setOutputProperty(OutputKeys.INDENT, "yes");
+	        t.setOutputProperty("{https://xml.apache.org/xslt}indent-amount", "4");
+	        StreamResult result = new StreamResult(inputFile);
+	        t.transform(source, result);
+
+	    }
+	
     /**
      * Egy előre elkészített edzésterv adatbázisból való beolvasására szolgáló függvény.
      * 
@@ -64,7 +186,10 @@ public class EdzesDAO {
     public static Edzesterv getSablonEdzesterv(String filename) throws SAXException, IOException, ParserConfigurationException  {
         
         //InputStream inputFile = EdzesDAO.class.getResourceAsStream(filename);
-        File inputFile = new File("src/main/resources/xml/" + filename);
+    	
+    	File inputFile = new File("src/main/resources/xml/" + filename);
+    	//inputFile.renameTo(new File(System.getProperty("user.home") + "/."+filename));
+    	
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(inputFile);
@@ -127,6 +252,7 @@ public class EdzesDAO {
 
         //InputStream inputFile = EdzesDAO.class.getResourceAsStream(filename);
         File inputFile = new File("src/main/resources/xml/" + filename);
+    	//File inputFile = new File("user.home"+"/."+filename);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(inputFile);
@@ -165,51 +291,7 @@ public class EdzesDAO {
      * @throws TransformerConfigurationException
      * @throws TransformerException 
      */
-    public static void createFelhasznalo(String felhNev, String felhMagassag, String felhSuly) throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerException {
-
-        //InputStream inputFile = EdzesDAO.class.getResourceAsStream("dataXML.xml");
-        File inputFile = new File("src/main/resources/xml/dataXML.xml");
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(inputFile);
-        Element root = doc.getDocumentElement();
-
-        Element felhasznaloE = doc.createElement("felhasznalo");
-
-        Felhasznalo f = new Felhasznalo(felhNev, parseInt(felhMagassag), parseInt(felhSuly));
-
-        long felhTtindex = f.getTtindex();
-
-        long felhKcal = f.getKcal();
-
-        Attr nev = doc.createAttribute("nev");
-        Attr ttindex = doc.createAttribute("ttindex");
-        Attr kcal = doc.createAttribute("kcal");
-
-        nev.setNodeValue(felhNev);
-        ttindex.setNodeValue(String.valueOf(felhTtindex));
-        kcal.setNodeValue(String.valueOf(felhKcal));
-
-        felhasznaloE.setAttributeNode(kcal);
-        felhasznaloE.setAttributeNode(nev);
-        felhasznaloE.setAttributeNode(ttindex);
-
-        root.appendChild(felhasznaloE);
-
-        Element edzestervE = doc.createElement("edzesterv");
-
-        felhasznaloE.appendChild(edzestervE);
-
-        DOMSource source = new DOMSource(doc);
-
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer t = tf.newTransformer();
-        t.setOutputProperty(OutputKeys.INDENT, "yes");
-        t.setOutputProperty("{https://xml.apache.org/xslt}indent-amount", "4");
-        StreamResult result = new StreamResult("src/main/resources/xml/dataXML.xml");
-        t.transform(source, result);
-
-    }
+   
     /**
      * Egy edzésnap adatainak adatbázisba írását végző függvény.
      * 
@@ -226,7 +308,7 @@ public class EdzesDAO {
     public static void createNap(String felhNev, String felhKcal, String napNev, String edzesTipus) throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerException {
 
         //InputStream inputFile = EdzesDAO.class.getResourceAsStream("dataXML.xml");
-        File inputFile = new File("src/main/resources/xml/dataXML.xml");
+    	File inputFile = new File(System.getProperty("user.home") + "/.dataXML.xml");
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(inputFile);
@@ -266,7 +348,7 @@ public class EdzesDAO {
         Transformer t = tf.newTransformer();
         t.setOutputProperty(OutputKeys.INDENT, "yes");
         t.setOutputProperty("{https://xml.apache.org/xslt}indent-amount", "4");
-        StreamResult result = new StreamResult("src/main/resources/xml/dataXML.xml");
+        StreamResult result = new StreamResult(inputFile);
         t.transform(source, result);
 
     }
@@ -289,7 +371,7 @@ public class EdzesDAO {
     public static void createGyakorlat(String felhNev, String felhKcal, String napNev, String gyakNev, String gyakSuly, String gyakSorozat, String gyakIsmetles) throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerException {
 
        // InputStream inputFile = EdzesDAO.class.getResourceAsStream("dataXML.xml");
-        File inputFile = new File("src/main/resources/xml/dataXML.xml");
+    	File inputFile = new File(System.getProperty("user.home") + "/.dataXML.xml");
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(inputFile);
@@ -343,7 +425,7 @@ public class EdzesDAO {
         Transformer t = tf.newTransformer();
         t.setOutputProperty(OutputKeys.INDENT, "yes");
         t.setOutputProperty("{https://xml.apache.org/xslt}indent-amount", "4");
-        StreamResult result = new StreamResult("src/main/resources/xml/dataXML.xml");
+        StreamResult result = new StreamResult(inputFile);
         t.transform(source, result);
 
     }
@@ -361,7 +443,7 @@ public class EdzesDAO {
     public static List<Felhasznalo> getFelhasznalok() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerException {
 
         //InputStream inputFile = EdzesDAO.class.getResourceAsStream("dataXML.xml");
-        File inputFile = new File("src/main/resources/xml/dataXML.xml");
+    	File inputFile = new File(System.getProperty("user.home") + "/.dataXML.xml");
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(inputFile);
@@ -431,7 +513,7 @@ public class EdzesDAO {
     public static List<Felhasznalo> getNevek() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerException {
 
         //InputStream inputFile = EdzesDAO.class.getResourceAsStream("dataXML.xml");
-        File inputFile = new File("src/main/resources/xml/dataXML.xml");
+    	File inputFile = new File(System.getProperty("user.home") + "/.dataXML.xml");
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(inputFile);
@@ -452,4 +534,6 @@ public class EdzesDAO {
 
         return felhasznalok;
     }
+    
+    
 }
