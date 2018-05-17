@@ -61,6 +61,7 @@ public class AdatokController implements Initializable {
     boolean kiSzamolte = false;
     Validate v = new Validate();
     
+    
     private static final Logger logger = LoggerFactory.getLogger(AdatokController.class);
 
     @FXML
@@ -108,7 +109,6 @@ public class AdatokController implements Initializable {
     
     @FXML
     public void handleEtrendButtonAction(ActionEvent event) throws ParserConfigurationException, SAXException, IOException, TransformerException {
-
         if (kiSzamolte) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Etrend.fxml"));
             Parent root = (Parent) loader.load();
@@ -127,7 +127,8 @@ public class AdatokController implements Initializable {
 
     @FXML
     public void handleSzamolButtonAction(ActionEvent event) throws ParserConfigurationException, SAXException, IOException, TransformerException {
-        Validate v = new Validate();
+        EdzesDAO.CreateXML("dataXML.xml","felhasználók");
+    	Validate v = new Validate();
         logger.debug("Testtömegindex számítása...");
         
         if (v.isKarakterBemenet(nev_TF.getText(), "Név") && v.isSzamBemenet(magassag_TF.getText(), "Magasság")
