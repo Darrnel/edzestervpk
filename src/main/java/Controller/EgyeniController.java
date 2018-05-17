@@ -29,8 +29,6 @@ import Modell.Validate;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -40,6 +38,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
@@ -313,7 +312,6 @@ public class EgyeniController implements Initializable {
             kcalTF.setText(felhKcal);
 
         } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
-            Logger.getLogger(EgyeniController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
